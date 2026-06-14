@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "LEGALY",
   description: "Tu asistente legal en Ecuador: crea solicitudes y conversa con tu abogado.",
   manifest: "/manifest.json",
-  icons: { icon: "/icon.svg", apple: "/icon.svg" },
+  icons: { icon: "/icon-192.png", apple: "/apple-icon.png" },
   appleWebApp: { capable: true, title: "LEGALY", statusBarStyle: "default" },
 };
 
