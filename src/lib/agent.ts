@@ -154,7 +154,7 @@ ${contexto}`;
     messages: [{ role: "user", content: mensaje }],
   });
 
-  const bloque = res.content.find((b) => b.type === "text");
+  const bloque = res.content.find((b: any) => b.type === "text");
   return bloque && bloque.type === "text"
     ? bloque.text
     : "No pude generar una respuesta en este momento.";
