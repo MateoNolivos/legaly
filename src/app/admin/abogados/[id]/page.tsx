@@ -27,7 +27,7 @@ export default async function FichaAbogadoPage({ params }: { params: { id: strin
   if (!ab || ab.role !== "ABOGADO") notFound();
 
   const suyas = ab.solicitudesComoAbogado;
-  const clienteIds = [...new Set(suyas.map((s) => s.clienteId))];
+  const clienteIds = Array.from(new Set(suyas.map((s) => s.clienteId)));
   const subs = clienteIds.length
     ? await prisma.suscripcion.findMany({ where: { usuarioId: { in: clienteIds }, estado: "Activa" }, select: { precio: true } })
     : [];

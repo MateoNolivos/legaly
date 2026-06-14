@@ -47,7 +47,7 @@ export default async function AbogadoPage() {
     return a.createdAt.getTime() - b.createdAt.getTime();
   });
 
-  const metricas = [
+  const metricas: { label: string; valor: string; alerta?: boolean }[] = [
     { label: "Activas", valor: String(activas.length) },
     { label: "Sin responder", valor: String(sinResponder.length), alerta: sinResponder.length > 0 },
     { label: "Prom. 1ª respuesta", valor: formatDuracion(promPrimera) },

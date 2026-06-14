@@ -47,7 +47,7 @@ export default async function AdminPage() {
   const promPrimera = promedio(solicitudes.map((s) => tiempoPrimeraRespuestaMs(s)));
   const promChat = promedio(solicitudes.map((s) => tiempoPromedioRespuestaMs(s.mensajes)));
 
-  const metricas = [
+  const metricas: { label: string; valor: string; alerta?: boolean }[] = [
     { label: "Ingresos / mes", valor: `$${ingresos}` },
     { label: "Solicitudes totales", valor: String(solicitudes.length) },
     { label: "Activas", valor: String(activas.length) },
