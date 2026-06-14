@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { comprimirImagen } from "@/lib/imagen";
 
 // Verificación facial: abre la cámara frontal, guía al usuario para centrar el
 // rostro (usa la API FaceDetector del navegador si está disponible) y toma la selfie.
@@ -69,7 +70,7 @@ export default function SelfieCapture({ onCapture }: { onCapture: (dataUrl: stri
     setActiva(false);
   }
 
-  function capturar() {
+  async function capturar() {
     const v = videoRef.current;
     if (!v) return;
     const canvas = document.createElement("canvas");
@@ -77,7 +78,7 @@ export default function SelfieCapture({ onCapture }: { onCapture: (dataUrl: stri
     canvas.height = v.videoHeight || 480;
     const ctx = canvas.getContext("2d");
     if (ctx) ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
-    const data = canvas.toDataURL("image/jpeg", 0.85);
+    const data = await comprimirImagen(canvas.toDataURL("image/jpeg", 0.85), 900, 0.8);
     setPreview(data);
     onCapture(data);
     cerrar();

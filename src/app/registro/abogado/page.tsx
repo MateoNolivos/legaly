@@ -51,6 +51,7 @@ export default function RegistroAbogadoPage() {
     if (!ced.nombre.trim()) return setError("Confirma tu nombre (lo leemos de la cédula).");
     if (especialidades.length === 0) return setError("Elige al menos una especialidad.");
     if (palabrasBio > 500) return setError("La biografía no puede superar las 500 palabras.");
+    if (password.length < 6) return setError("La contraseña debe tener al menos 6 caracteres.");
     if (!aceptaT || !aceptaP) return setError("Debes aceptar los términos y las políticas de privacidad.");
     setLoading(true);
     try {
@@ -143,7 +144,7 @@ export default function RegistroAbogadoPage() {
             <ReferenciasInput value={referencias} onChange={setReferencias} />
           </div>
 
-          <input className={input} type="password" placeholder="Contraseña (mín. 6)" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <input className={input} type="password" minLength={6} placeholder="Contraseña (mín. 6)" value={password} onChange={(e) => setPassword(e.target.value)} required />
 
           <AceptarLegales terminos={aceptaT} privacidad={aceptaP} onTerminos={setAceptaT} onPrivacidad={setAceptaP} />
 

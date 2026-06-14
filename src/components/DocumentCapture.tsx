@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { comprimirImagen } from "@/lib/imagen";
 
 // Captura de documento con MARCO GUÍA (forma de cédula) y CAPTURA AUTOMÁTICA:
 // cuando el documento está bien encuadrado y enfocado, la toma sola.
@@ -25,15 +26,16 @@ export default function DocumentCapture({
   const prevRef = useRef(0);
   const inicioRef = useRef(0);
 
-  function usar(dataUrl: string, esPdf: boolean) {
-    setPreview(esPdf ? "" : dataUrl);
-    onCapture(dataUrl, esPdf);
+  async function usar(dataUrl: string, esPdf: boolean) {
+    const final = esPdf ? dataUrl : await comprimirImagen(dataUrl, 1600, 0.8);
+    setPreview(esPdf ? "" : final);
+    onCapture(final, esPdf);
   }
 
   function onArchivo(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 6_000_000) { setError("El archivo debe pesar menos de 6 MB."); return; }
+    if (file.size > 15_000_000) { setError("El archivo es demasiado grande."); return; }
     setError("");
     const reader = new FileReader();
     reader.onload = () => usar(String(reader.result), file.type === "application/pdf");
@@ -187,7 +189,7 @@ export default function DocumentCapture({
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={preview} alt="Documento" className="h-20 rounded-lg border border-slate-200 object-cover" />
-          <button type="button" onClick={abrir} className="text-xs text-brand hover:underline">Volver a capturar</button>
+          <button type="button" onClick={() => setPreview("")} className="text-xs text-brand hover:underline">Volver a capturar / cambiar</button>
         </div>
       ) : (
         <div className="flex gap-4 items-center">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { comprimirImagen } from "@/lib/imagen";
 
 // Permite subir una imagen desde el dispositivo O tomarla con la cámara en el momento.
 // Devuelve la imagen como data URL a través de onCapture.
@@ -19,16 +20,17 @@ export default function PhotoCapture({
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  function usarImagen(dataUrl: string) {
-    setPreview(dataUrl);
-    onCapture(dataUrl);
+  async function usarImagen(dataUrl: string) {
+    const final = await comprimirImagen(dataUrl, 900, 0.8);
+    setPreview(final);
+    onCapture(final);
   }
 
   function onArchivo(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 3_000_000) {
-      setError("La imagen debe pesar menos de 3 MB.");
+    if (file.size > 10_000_000) {
+      setError("La imagen es demasiado grande.");
       return;
     }
     setError("");

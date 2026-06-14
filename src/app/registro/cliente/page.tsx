@@ -39,6 +39,7 @@ export default function RegistroClientePage() {
     if (!cedulaReverso) return setError("Captura el REVERSO de tu cédula.");
     if (!selfie) return setError("Completa la verificación facial (selfie).");
     if (!ced.nombre.trim()) return setError("Confirma tu nombre (lo leemos de la cédula).");
+    if (password.length < 6) return setError("La contraseña debe tener al menos 6 caracteres.");
     if (!aceptaT || !aceptaP) return setError("Debes aceptar los términos y las políticas de privacidad.");
     setLoading(true);
     try {
@@ -107,7 +108,7 @@ export default function RegistroClientePage() {
             <LocationPicker value={loc} onChange={setLoc} />
           </div>
 
-          <input className={input} type="password" placeholder="Contraseña (mín. 6)" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <input className={input} type="password" minLength={6} placeholder="Contraseña (mín. 6)" value={password} onChange={(e) => setPassword(e.target.value)} required />
 
           <AceptarLegales terminos={aceptaT} privacidad={aceptaP} onTerminos={setAceptaT} onPrivacidad={setAceptaP} />
 
