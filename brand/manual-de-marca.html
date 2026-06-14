@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LEGALY — Manual de Marca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --emerald-500:#10B981; --emerald-600:#059669; --emerald-700:#047857;
+    --emerald-900:#064E3B; --emerald-100:#D1FAE5;
+    --ink:#0F172A; --slate:#64748B; --bg:#F8FAFC; --line:#E2E8F0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  .display{font-family:'Plus Jakarta Sans',sans-serif}
+  .wrap{max-width:980px;margin:0 auto;padding:0 28px}
+  section{padding:64px 0;border-bottom:1px solid var(--line)}
+  h2.title{font-family:'Plus Jakarta Sans';font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--emerald-600);margin-bottom:24px}
+  h3{font-family:'Plus Jakarta Sans';font-weight:800;font-size:26px;margin-bottom:10px;letter-spacing:-0.5px}
+  p.lead{font-size:18px;color:var(--slate);max-width:640px}
+  .muted{color:var(--slate);font-size:15px}
+
+  /* HERO */
+  .hero{background:linear-gradient(135deg,var(--emerald-900),var(--emerald-700));color:#fff;padding:72px 0 64px}
+  .hero .logo{display:inline-flex;align-items:center;gap:14px}
+  .hero .wordmark{font-family:'Plus Jakarta Sans';font-weight:800;font-size:54px;letter-spacing:-2px}
+  .hero p{color:#A7F3D0;font-size:19px;margin-top:18px;max-width:560px}
+  .tag{display:inline-block;margin-top:24px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:7px 16px;font-size:13px;font-weight:600;letter-spacing:.5px}
+
+  /* LOGO */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .box{background:#fff;border:1px solid var(--line);border-radius:18px;padding:32px;display:flex;align-items:center;justify-content:center;min-height:150px}
+  .box.dark{background:var(--emerald-900)}
+  .wm{font-family:'Plus Jakarta Sans';font-weight:800;font-size:40px;letter-spacing:-1.5px}
+
+  /* COLORS */
+  .swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+  .sw{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#fff}
+  .sw .chip{height:90px}
+  .sw .meta{padding:12px 14px}
+  .sw .name{font-weight:700;font-size:14px}
+  .sw .hex{font-size:12px;color:var(--slate);font-family:ui-monospace,monospace;margin-top:2px}
+  .sw .use{font-size:11px;color:var(--slate);margin-top:6px;line-height:1.4}
+
+  /* TYPE */
+  .typecard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:32px}
+  .specimen{font-family:'Plus Jakarta Sans';font-weight:800;font-size:64px;letter-spacing:-2px;line-height:1}
+  .scale span{display:block;border-top:1px solid var(--line);padding:14px 0;color:var(--ink)}
+
+  /* VOICE */
+  .voice{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .do,.dont{background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px}
+  .do{border-left:4px solid var(--emerald-500)}
+  .dont{border-left:4px solid #F87171}
+  .do h4,.dont h4{font-family:'Plus Jakarta Sans';font-size:15px;margin-bottom:14px}
+  .do h4::before{content:"✓ ";color:var(--emerald-600)}
+  .dont h4::before{content:"✕ ";color:#EF4444}
+  .bubble{background:var(--emerald-100);color:var(--emerald-900);border-radius:14px 14px 14px 4px;padding:12px 16px;font-size:14px;margin-bottom:10px}
+  .bubble.bad{background:#FEE2E2;color:#7F1D1D;border-radius:14px 14px 14px 4px}
+
+  /* UI */
+  .btnrow{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .btn{font-weight:600;font-size:14px;border-radius:10px;padding:11px 22px;border:none;cursor:default}
+  .btn.primary{background:var(--emerald-600);color:#fff}
+  .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn.pill{background:#fff;border:1px solid var(--line);color:var(--slate);border-radius:999px;padding:8px 16px;font-size:13px}
+  .footer{padding:40px 0;text-align:center;color:var(--slate);font-size:13px}
+
+  @media(max-width:760px){
+    .grid2,.grid3,.voice{grid-template-columns:1fr}
+    .swatches{grid-template-columns:repeat(2,1fr)}
+    .specimen{font-size:44px}.hero .wordmark{font-size:40px}
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap">
+    <div class="logo">
+      <svg width="64" height="64" viewBox="0 0 100 100">
+        <rect x="4" y="4" width="92" height="92" rx="27" fill="#fff"/>
+        <path d="M40 27 L40 66 L71 66" fill="none" stroke="#10B981" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="wordmark">Legaly<span style="color:#6EE7B7">.</span></span>
+    </div>
+    <p>La forma simple de entender tu proceso legal. Tus casos y audiencias, claros y a la mano.</p>
+    <span class="tag">MANUAL DE MARCA · v1</span>
+  </div>
+</div>
+
+<!-- ESENCIA -->
+<section><div class="wrap">
+  <h2 class="title">La esencia</h2>
+  <h3>Moderna, cercana y confiable.</h3>
+  <p class="lead">LEGALY traduce el mundo legal —que suele sentirse frío y confuso— a una experiencia humana y tranquila. Hablamos claro, sin tecnicismos, y le damos a cada persona la certeza de saber en qué punto está su caso. El verde esmeralda representa orden, calma y "todo en marcha".</p>
+  <div class="grid3" style="margin-top:28px">
+    <div class="box" style="flex-direction:column;align-items:flex-start;text-align:left;min-height:auto;padding:26px">
+      <strong class="display">Cercana</strong>
+      <span class="muted">Tuteamos, explicamos sencillo y acompañamos.</span>
+    </div>
+    <div class="box" style="flex-direction:column;align-items:flex-start;text-align:left;min-height:auto;padding:26px">
+      <strong class="display">Clara</strong>
+      <span class="muted">Una respuesta directa vale más que diez párrafos.</span>
+    </div>
+    <div class="box" style="flex-direction:column;align-items:flex-start;text-align:left;min-height:auto;padding:26px">
+      <strong class="display">Confiable</strong>
+      <span class="muted">Nunca inventamos: solo datos reales y verificados.</span>
+    </div>
+  </div>
+</div></section>
+
+<!-- LOGO -->
+<section><div class="wrap">
+  <h2 class="title">El logo</h2>
+  <h3>El monograma "L".</h3>
+  <p class="lead">El ícono es la inicial de LEGALY: una <strong>L</strong> firme y clara dentro de un cuadrado redondeado en esmeralda. Simple, reconocible a cualquier tamaño y fácil de recordar. Funciona solo o acompañado del nombre.</p>
+
+  <div class="grid2" style="margin-top:28px">
+    <div class="box">
+      <span style="display:inline-flex;align-items:center;gap:12px">
+        <svg width="52" height="52" viewBox="0 0 100 100"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34D399"/><stop offset=".55" stop-color="#10B981"/><stop offset="1" stop-color="#047857"/></linearGradient></defs><rect x="4" y="4" width="92" height="92" rx="27" fill="url(#g1)"/><path d="M40 27 L40 66 L71 66" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="wm" style="color:#0F172A">Legaly<span style="color:#10B981">.</span></span>
+      </span>
+    </div>
+    <div class="box dark">
+      <span style="display:inline-flex;align-items:center;gap:12px">
+        <svg width="52" height="52" viewBox="0 0 100 100"><rect x="4" y="4" width="92" height="92" rx="27" fill="#fff"/><path d="M40 27 L40 66 L71 66" fill="none" stroke="#10B981" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="wm" style="color:#fff">Legaly<span style="color:#6EE7B7">.</span></span>
+      </span>
+    </div>
+  </div>
+  <p class="muted" style="margin-top:18px">Reglas rápidas: deja siempre aire alrededor del logo (mínimo el alto del ícono), no lo deformes, no le cambies los colores ni lo pongas sobre fondos que compitan con el verde.</p>
+</div></section>
+
+<!-- COLOR -->
+<section><div class="wrap">
+  <h2 class="title">Paleta de color</h2>
+  <h3>Verde esmeralda como protagonista.</h3>
+  <div class="swatches" style="margin-top:24px">
+    <div class="sw"><div class="chip" style="background:#10B981"></div><div class="meta"><div class="name">Esmeralda</div><div class="hex">#10B981</div><div class="use">Acentos, ícono, detalles.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#059669"></div><div class="meta"><div class="name">Esmeralda 600</div><div class="hex">#059669</div><div class="use">Botones y enlaces.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#047857"></div><div class="meta"><div class="name">Esmeralda 700</div><div class="hex">#047857</div><div class="use">Hover / estados.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#064E3B"></div><div class="meta"><div class="name">Verde profundo</div><div class="hex">#064E3B</div><div class="use">Fondos oscuros.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#D1FAE5"></div><div class="meta"><div class="name">Menta</div><div class="hex">#D1FAE5</div><div class="use">Fondos suaves.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#0F172A"></div><div class="meta"><div class="name">Carbón</div><div class="hex">#0F172A</div><div class="use">Texto principal.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#64748B"></div><div class="meta"><div class="name">Gris</div><div class="hex">#64748B</div><div class="use">Texto secundario.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#F8FAFC;border-bottom:1px solid #E2E8F0"></div><div class="meta"><div class="name">Fondo</div><div class="hex">#F8FAFC</div><div class="use">Lienzo general.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#FFFFFF;border-bottom:1px solid #E2E8F0"></div><div class="meta"><div class="name">Blanco</div><div class="hex">#FFFFFF</div><div class="use">Tarjetas.</div></div></div>
+    <div class="sw"><div class="chip" style="background:#E2E8F0"></div><div class="meta"><div class="name">Línea</div><div class="hex">#E2E8F0</div><div class="use">Bordes.</div></div></div>
+  </div>
+</div></section>
+
+<!-- TIPOGRAFIA -->
+<section><div class="wrap">
+  <h2 class="title">Tipografía</h2>
+  <h3>Plus Jakarta Sans + Inter.</h3>
+  <p class="lead">Plus Jakarta Sans para títulos y el logo: geométrica, amable y moderna. Inter para todo el texto: clarísima en pantalla. Ambas son gratuitas (Google Fonts).</p>
+  <div class="grid2" style="margin-top:24px">
+    <div class="typecard">
+      <span class="muted">Títulos · Plus Jakarta Sans</span>
+      <div class="specimen display" style="margin:12px 0 6px">Aa</div>
+      <div class="scale display">
+        <span style="font-weight:800;font-size:24px">Tu próxima audiencia</span>
+        <span style="font-weight:700;font-size:18px">En qué paso está tu proceso</span>
+      </div>
+    </div>
+    <div class="typecard">
+      <span class="muted">Texto · Inter</span>
+      <div class="specimen" style="font-family:'Inter';font-weight:700;margin:12px 0 6px">Aa</div>
+      <div class="scale">
+        <span style="font-size:16px">Tu audiencia es el martes 23 de junio a las 09:00, modalidad telemática.</span>
+        <span style="font-size:13px;color:var(--slate)">Último movimiento: citación a la parte demandada.</span>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<!-- VOZ -->
+<section><div class="wrap">
+  <h2 class="title">Tono de voz</h2>
+  <h3>Como un amigo que sabe de leyes.</h3>
+  <p class="lead">El asistente habla claro, tranquiliza y va al grano. Nunca usa jerga innecesaria ni promete cosas que no puede confirmar.</p>
+  <div class="voice" style="margin-top:24px">
+    <div class="do">
+      <h4>Así sí</h4>
+      <div class="bubble">Tu próxima audiencia es el martes 23 de junio a las 09:00. Es telemática, te llega el enlace por correo.</div>
+      <div class="bubble">Aún no hay una fecha registrada. En cuanto tu abogada la cargue, te la muestro aquí.</div>
+    </div>
+    <div class="dont">
+      <h4>Así no</h4>
+      <div class="bubble bad">De conformidad con lo dispuesto en el Art. 332 del COGEP, la diligencia se verificará oportunamente.</div>
+      <div class="bubble bad">Tu audiencia probablemente sea pronto, creo que la próxima semana.</div>
+    </div>
+  </div>
+</div></section>
+
+<!-- UI -->
+<section><div class="wrap">
+  <h2 class="title">En la aplicación</h2>
+  <h3>Componentes base.</h3>
+  <div class="box" style="flex-direction:column;align-items:flex-start;gap:22px;padding:34px">
+    <div class="btnrow">
+      <button class="btn primary">Preguntar al asistente</button>
+      <button class="btn ghost">Ver mis casos</button>
+      <button class="btn pill">¿Cuándo es mi audiencia?</button>
+    </div>
+    <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;width:100%;max-width:420px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--emerald-600);text-transform:uppercase">Laboral</div>
+      <div style="font-family:ui-monospace,monospace;font-size:13px;color:var(--ink);margin-top:4px">Exp. 17294-2025-00187</div>
+      <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:12px;font-size:12px;color:var(--slate)">PRÓXIMA AUDIENCIA</div>
+      <div style="font-size:14px;color:var(--ink);margin-top:2px">Martes 23 de junio, 09:00 · Telemática</div>
+    </div>
+  </div>
+</div></section>
+
+<div class="footer wrap">LEGALY · Manual de marca v1 · Ecuador 2026</div>
+
+</body>
+</html>

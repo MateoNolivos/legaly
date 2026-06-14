@@ -1,0 +1,165 @@
+// LEGALY - Modelo de datos (SQLite para desarrollo).
+// Para pasar a Postgres/Supabase en produccion: cambia provider a "postgresql"
+// y la DATABASE_URL. El resto del esquema se mantiene igual.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Usuarios del sistema. role indica el tipo: "CLIENTE", "ABOGADO" o "ADMIN".
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         String   @default("CLIENTE")
+  foto         String? // foto de perfil como data URL
+  cedulaFoto   String? // foto/archivo del FRENTE de la cédula (OCR)
+  cedulaReverso String? // foto del REVERSO de la cédula
+  selfie       String? // selfie de verificación facial (KYC)
+
+  // Ubicación (capturada con el navegador o Google Maps):
+  ubicacion String? // dirección en texto
+  lat       Float?
+  lng       Float?
+
+  // Solo ABOGADOS: aprobación de la candidatura.
+  aprobado Boolean @default(true) // los abogados nuevos entran en false (en revisión)
+
+  // Campos solo para ABOGADOS:
+  especialidad String? // materias separadas por coma: "Civil, Laboral"
+  matricula    String?
+  experiencia  Int? // años de experiencia
+  bio          String? // presentacion profesional (máx 500 palabras)
+  referencias  String? // JSON: lista de { nombre, contacto }
+
+  // Campos solo para CLIENTES:
+  cedula          String?
+  fechaNacimiento DateTime?
+  genero          String?
+  ocupacion       String?
+
+  createdAt DateTime @default(now())
+
+  casosComoCliente Caso[]        @relation("CasosCliente")
+  casosComoAbogado Caso[]        @relation("CasosAbogado")
+  suscripciones    Suscripcion[]
+
+  solicitudesComoCliente Solicitud[] @relation("SolicitudesCliente")
+  solicitudesComoAbogado Solicitud[] @relation("SolicitudesAbogado")
+  mensajes               Mensaje[]
+  notificaciones         Notificacion[]
+}
+
+// Notificaciones in-app (la campanita). El correo se envía aparte.
+model Notificacion {
+  id        String   @id @default(cuid())
+  usuarioId String
+  tipo      String // "solicitud" | "mensaje" | "aprobacion" | "pago"
+  titulo    String
+  cuerpo    String
+  url       String?
+  leida     Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}
+
+// Solicitud de ayuda creada por el cliente (el cuestionario inicial).
+// Se asigna automaticamente a un abogado por especialidad + carga.
+model Solicitud {
+  id          String  @id @default(cuid())
+  clienteId   String
+  abogadoId   String? // asignado automaticamente
+  materia     String // tipo de necesidad: Civil, Laboral, Penal, Transito, Familia
+  descripcion String
+  urgencia    String  @default("Media") // Baja / Media / Alta
+  ciudad      String?
+  telefono    String?
+  // Estado: "Nueva" -> "Asignada" -> "En progreso" -> "Resuelta"
+  estado      String  @default("Nueva")
+
+  createdAt       DateTime  @default(now())
+  assignedAt      DateTime? // cuando se asigno a un abogado
+  firstResponseAt DateTime? // primera respuesta del abogado (para metricas)
+  resueltaAt      DateTime?
+
+  cliente  User      @relation("SolicitudesCliente", fields: [clienteId], references: [id])
+  abogado  User?     @relation("SolicitudesAbogado", fields: [abogadoId], references: [id])
+  mensajes Mensaje[]
+}
+
+// Mensajes del chat entre cliente y abogado dentro de una solicitud.
+model Mensaje {
+  id          String   @id @default(cuid())
+  solicitudId String
+  autorId     String
+  autorRol    String // "CLIENTE" o "ABOGADO"
+  texto       String
+  createdAt   DateTime @default(now())
+
+  solicitud Solicitud @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
+  autor     User      @relation(fields: [autorId], references: [id])
+}
+
+// Un proceso o caso legal.
+model Caso {
+  id               String   @id @default(cuid())
+  numeroExpediente String
+  materia          String // civil, penal, laboral, transito, etc.
+  juzgado          String?
+  // Estado procesal actual en texto: "En tramite", "Sentencia", "Archivado", etc.
+  estado           String   @default("En tramite")
+  clienteId        String
+  abogadoId        String
+  createdAt        DateTime @default(now())
+
+  cliente     User         @relation("CasosCliente", fields: [clienteId], references: [id])
+  abogado     User         @relation("CasosAbogado", fields: [abogadoId], references: [id])
+  audiencias  Audiencia[]
+  movimientos Movimiento[]
+}
+
+// Audiencias agendadas de un caso.
+model Audiencia {
+  id        String   @id @default(cuid())
+  casoId    String
+  fecha     DateTime
+  tipo      String // "Audiencia preliminar", "Juicio", etc.
+  modalidad String   @default("Presencial") // Presencial / Telematica
+  lugar     String?
+  createdAt DateTime @default(now())
+
+  caso Caso @relation(fields: [casoId], references: [id], onDelete: Cascade)
+}
+
+// Movimientos / actuaciones procesales (el historial del caso).
+model Movimiento {
+  id          String   @id @default(cuid())
+  casoId      String
+  fecha       DateTime @default(now())
+  descripcion String
+  createdAt   DateTime @default(now())
+
+  caso Caso @relation(fields: [casoId], references: [id], onDelete: Cascade)
+}
+
+// Suscripcion del cliente a LEGALY.
+model Suscripcion {
+  id        String    @id @default(cuid())
+  usuarioId String
+  plan      String // "Básico", "Pro", "Gold"
+  precio    Int       @default(0) // precio mensual en USD
+  estado    String    @default("Activa")
+  inicio    DateTime  @default(now())
+  fin       DateTime?
+  descuento Int       @default(0) // porcentaje de descuento preferente
+
+  usuario User @relation(fields: [usuarioId], references: [id])
+}

@@ -1,0 +1,18 @@
+<svg width="350" height="110" viewBox="0 0 350 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Legaly">
+  <defs>
+    <linearGradient id="legalyEmerald" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#34D399"/>
+      <stop offset="0.55" stop-color="#10B981"/>
+      <stop offset="1" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icono: monograma L -->
+  <g transform="translate(6,6) scale(0.94)">
+    <rect x="4" y="4" width="92" height="92" rx="27" fill="url(#legalyEmerald)"/>
+    <path d="M40 27 L40 66 L71 66" fill="none" stroke="#FFFFFF" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="118" y="72" font-family="'Plus Jakarta Sans','Trebuchet MS',Arial,sans-serif" font-size="52" font-weight="800" letter-spacing="-1.5" fill="#0F172A">Legaly<tspan fill="#10B981">.</tspan></text>
+</svg>

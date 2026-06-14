@@ -1,0 +1,17 @@
+{
+  "name": "LEGALY",
+  "short_name": "LEGALY",
+  "description": "Tu asistente legal en Ecuador: crea solicitudes y conversa con tu abogado.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#059669",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
