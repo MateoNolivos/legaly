@@ -17,6 +17,9 @@ function hora(iso: string) {
   }).format(new Date(iso));
 }
 
+const RAPIDO = 3000; // hay actividad
+const LENTO = 20000; // sin novedades (ahorra llamadas)
+
 export default function Chat({
   solicitudId,
   rol,
@@ -33,22 +36,63 @@ export default function Chat({
   const [enviando, setEnviando] = useState(false);
   const finRef = useRef<HTMLDivElement>(null);
 
-  const cargar = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/solicitudes/${solicitudId}/mensajes`);
-      if (!res.ok) return;
-      const data = await res.json();
-      setMensajes(data.mensajes);
-    } catch {
-      /* silencio: reintenta en el siguiente ciclo */
-    }
-  }, [solicitudId]);
+  // Marca del último mensaje (para pedir solo lo nuevo) e intervalo adaptativo.
+  const ultimaFecha = useRef(inicial.length ? inicial[inicial.length - 1].createdAt : "");
+  const intervalo = useRef(RAPIDO);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Polling cada 4 segundos para ver mensajes nuevos.
+  const agregar = useCallback((nuevos: Mensaje[]) => {
+    if (!nuevos.length) return false;
+    let huboNuevos = false;
+    setMensajes((prev) => {
+      const ids = new Set(prev.map((m) => m.id));
+      const filtrados = nuevos.filter((m) => !ids.has(m.id));
+      if (!filtrados.length) return prev;
+      huboNuevos = true;
+      const todos = [...prev, ...filtrados];
+      ultimaFecha.current = todos[todos.length - 1].createdAt;
+      return todos;
+    });
+    return huboNuevos;
+  }, []);
+
+  const consultar = useCallback(async () => {
+    if (typeof document !== "undefined" && document.hidden) return false;
+    try {
+      const q = ultimaFecha.current ? `?desde=${encodeURIComponent(ultimaFecha.current)}` : "";
+      const res = await fetch(`/api/solicitudes/${solicitudId}/mensajes${q}`, { cache: "no-store" });
+      if (!res.ok) return false;
+      const data = await res.json();
+      return agregar(data.mensajes || []);
+    } catch {
+      return false;
+    }
+  }, [solicitudId, agregar]);
+
+  // Bucle de polling adaptativo: rápido si hay novedades, lento si no;
+  // pausa cuando la pestaña no está visible.
   useEffect(() => {
-    const t = setInterval(cargar, 4000);
-    return () => clearInterval(t);
-  }, [cargar]);
+    let activo = true;
+    const ciclo = async () => {
+      const huboNuevos = await consultar();
+      intervalo.current = huboNuevos ? RAPIDO : Math.min(intervalo.current + 3000, LENTO);
+      if (activo) timer.current = setTimeout(ciclo, intervalo.current);
+    };
+    timer.current = setTimeout(ciclo, intervalo.current);
+
+    const alVolver = () => {
+      if (!document.hidden) {
+        intervalo.current = RAPIDO;
+        consultar();
+      }
+    };
+    document.addEventListener("visibilitychange", alVolver);
+    return () => {
+      activo = false;
+      if (timer.current) clearTimeout(timer.current);
+      document.removeEventListener("visibilitychange", alVolver);
+    };
+  }, [consultar]);
 
   useEffect(() => {
     finRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -67,7 +111,10 @@ export default function Chat({
         body: JSON.stringify({ texto: limpio }),
       });
       const data = await res.json();
-      if (res.ok) setMensajes((m) => [...m, data.mensaje]);
+      if (res.ok && data.mensaje) {
+        agregar([data.mensaje]);
+        intervalo.current = RAPIDO; // tras enviar, vuelve a consultar seguido
+      }
     } catch {
       /* ignora */
     } finally {

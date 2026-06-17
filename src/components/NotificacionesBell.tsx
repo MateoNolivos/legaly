@@ -40,7 +40,9 @@ export default function NotificacionesBell() {
 
   useEffect(() => {
     cargar();
-    const t = setInterval(cargar, 15000);
+    const t = setInterval(() => {
+      if (!document.hidden) cargar();
+    }, 15000);
     return () => clearInterval(t);
   }, []);
 

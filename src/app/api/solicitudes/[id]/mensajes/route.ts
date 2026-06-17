@@ -15,7 +15,7 @@ async function cargarSiParticipa(id: string, userId: string, role: string) {
 }
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: { id: string } }
 ) {
   const session = getSession();
@@ -24,8 +24,15 @@ export async function GET(
   const solicitud = await cargarSiParticipa(params.id, session.id, session.role);
   if (!solicitud) return NextResponse.json({ error: "No encontrada." }, { status: 404 });
 
+  // "desde": si viene, solo devolvemos los mensajes posteriores (más liviano).
+  const desde = new URL(req.url).searchParams.get("desde");
+  const fecha = desde ? new Date(desde) : null;
+
   const mensajes = await prisma.mensaje.findMany({
-    where: { solicitudId: params.id },
+    where: {
+      solicitudId: params.id,
+      ...(fecha && !isNaN(fecha.getTime()) ? { createdAt: { gt: fecha } } : {}),
+    },
     orderBy: { createdAt: "asc" },
     select: { id: true, autorRol: true, texto: true, createdAt: true },
   });
