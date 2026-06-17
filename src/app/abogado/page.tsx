@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Header from "@/components/Header";
+import AbogadoNav from "@/components/AbogadoNav";
 import { EstadoBadge, UrgenciaBadge } from "@/components/Badges";
 import { requireRole } from "@/lib/guard";
 import { prisma } from "@/lib/db";
@@ -59,6 +60,7 @@ export default async function AbogadoPage() {
       <Header nombre={session.name} subtitulo={`Abogado · ${session.role === "ADMIN" ? "Admin" : "Asignaciones"}`} />
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+        <AbogadoNav actual="solicitudes" />
         <section>
           <h1 className="text-2xl font-display font-extrabold text-slate-800 mb-4">
             Mis métricas

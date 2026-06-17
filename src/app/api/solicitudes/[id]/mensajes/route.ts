@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { notificar } from "@/lib/notificaciones";
+import { responderAsistente } from "@/lib/asistente";
 
 // Verifica que el usuario sea participante de la solicitud (cliente o abogado).
 async function cargarSiParticipa(id: string, userId: string, role: string) {
@@ -67,28 +68,74 @@ export async function POST(
     select: { id: true, autorRol: true, texto: true, createdAt: true },
   });
 
-  // Si es la primera respuesta del abogado, registra el tiempo (para metricas)
-  // y mueve la solicitud a "En progreso".
+  // --- ABOGADO escribe: registra 1ª respuesta, toma el control (IA off) y avisa al cliente.
   if (rol === "ABOGADO") {
-    const datos: { firstResponseAt?: Date; estado?: string } = {};
+    const datos: { firstResponseAt?: Date; estado?: string; modo?: string } = {};
     if (!solicitud.firstResponseAt) datos.firstResponseAt = new Date();
-    if (solicitud.estado === "Asignada" || solicitud.estado === "Nueva") {
-      datos.estado = "En progreso";
-    }
+    if (solicitud.estado === "Asignada" || solicitud.estado === "Nueva") datos.estado = "En progreso";
+    if (solicitud.modo !== "abogado") datos.modo = "abogado";
     if (Object.keys(datos).length > 0) {
       await prisma.solicitud.update({ where: { id: params.id }, data: datos });
     }
+    await notificar({
+      usuarioId: solicitud.clienteId,
+      tipo: "mensaje",
+      titulo: "Nuevo mensaje",
+      cuerpo: `tu abogado respondió en tu solicitud de ${solicitud.materia}.`,
+      url: `/cliente/solicitud/${params.id}`,
+    });
+    return NextResponse.json({ ok: true, mensaje });
   }
 
-  // Notifica a la otra persona del chat.
-  const destinatarioId = rol === "ABOGADO" ? solicitud.clienteId : solicitud.abogadoId;
-  if (destinatarioId) {
+  // --- CLIENTE escribe en modo IA: el asistente responde o deriva al abogado.
+  if (solicitud.modo === "ia") {
+    const hist = await prisma.mensaje.findMany({
+      where: { solicitudId: params.id },
+      orderBy: { createdAt: "asc" },
+      take: 12,
+      select: { autorRol: true, texto: true },
+    });
+    const decision = await responderAsistente({
+      materia: solicitud.materia,
+      descripcion: solicitud.descripcion,
+      historial: hist.map((h) => ({ rol: h.autorRol, texto: h.texto })),
+    });
+
+    await prisma.mensaje.create({
+      data: {
+        solicitudId: params.id,
+        autorId: null,
+        autorRol: "ASISTENTE",
+        texto: decision.respuesta || "Voy a derivar esto a tu abogado.",
+      },
+    });
+
+    if (decision.escalar) {
+      await prisma.solicitud.update({
+        where: { id: params.id },
+        data: { modo: "abogado", ...(solicitud.estado !== "Resuelta" ? { estado: "En progreso" } : {}) },
+      });
+      if (solicitud.abogadoId) {
+        await notificar({
+          usuarioId: solicitud.abogadoId,
+          tipo: "mensaje",
+          titulo: "Una consulta necesita tu ayuda",
+          cuerpo: `un cliente requiere tu atención en una solicitud de ${solicitud.materia}.`,
+          url: `/abogado/solicitud/${params.id}`,
+        });
+      }
+    }
+    return NextResponse.json({ ok: true, mensaje });
+  }
+
+  // --- CLIENTE escribe en modo abogado: avisa al abogado.
+  if (solicitud.abogadoId) {
     await notificar({
-      usuarioId: destinatarioId,
+      usuarioId: solicitud.abogadoId,
       tipo: "mensaje",
       titulo: "Nuevo mensaje",
       cuerpo: `tienes un mensaje nuevo en tu solicitud de ${solicitud.materia}.`,
-      url: rol === "ABOGADO" ? `/cliente/solicitud/${params.id}` : `/abogado/solicitud/${params.id}`,
+      url: `/abogado/solicitud/${params.id}`,
     });
   }
 

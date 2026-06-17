@@ -25,15 +25,18 @@ export default function Chat({
   rol,
   inicial,
   disabled,
+  puedeEscalar,
 }: {
   solicitudId: string;
   rol: "CLIENTE" | "ABOGADO";
   inicial: Mensaje[];
   disabled?: boolean;
+  puedeEscalar?: boolean;
 }) {
   const [mensajes, setMensajes] = useState<Mensaje[]>(inicial);
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const [escalado, setEscalado] = useState(false);
   const finRef = useRef<HTMLDivElement>(null);
 
   // Marca del último mensaje (para pedir solo lo nuevo) e intervalo adaptativo.
@@ -98,6 +101,17 @@ export default function Chat({
     finRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [mensajes]);
 
+  async function escalar() {
+    try {
+      await fetch(`/api/solicitudes/${solicitudId}/escalar`, { method: "POST" });
+      setEscalado(true);
+      intervalo.current = RAPIDO;
+      consultar();
+    } catch {
+      /* ignora */
+    }
+  }
+
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
     const limpio = texto.trim();
@@ -131,19 +145,20 @@ export default function Chat({
           </p>
         )}
         {mensajes.map((m) => {
+          const esAsistente = m.autorRol === "ASISTENTE";
           const mio = m.autorRol === rol;
+          const etiqueta = esAsistente ? "🤖 Asistente" : m.autorRol === "ABOGADO" ? "Abogado" : "Cliente";
+          const burbuja = mio
+            ? "bg-brand text-white rounded-br-sm"
+            : esAsistente
+            ? "bg-brand-mint text-brand-dark border border-emerald-200 rounded-bl-sm"
+            : "bg-white border border-slate-200 text-slate-800 rounded-bl-sm";
           return (
             <div key={m.id} className={`flex ${mio ? "justify-end" : "justify-start"}`}>
-              <div
-                className={`max-w-[78%] rounded-2xl px-4 py-2 text-sm ${
-                  mio
-                    ? "bg-brand text-white rounded-br-sm"
-                    : "bg-white border border-slate-200 text-slate-800 rounded-bl-sm"
-                }`}
-              >
+              <div className={`max-w-[78%] rounded-2xl px-4 py-2 text-sm ${burbuja}`}>
                 <p className="whitespace-pre-line">{m.texto}</p>
-                <p className={`text-[10px] mt-1 ${mio ? "text-emerald-100" : "text-slate-400"}`}>
-                  {m.autorRol === "ABOGADO" ? "Abogado" : "Cliente"} · {hora(m.createdAt)}
+                <p className={`text-[10px] mt-1 ${mio ? "text-emerald-100" : esAsistente ? "text-emerald-700" : "text-slate-400"}`}>
+                  {etiqueta} · {hora(m.createdAt)}
                 </p>
               </div>
             </div>
@@ -151,6 +166,16 @@ export default function Chat({
         })}
         <div ref={finRef} />
       </div>
+
+      {puedeEscalar && !escalado && !disabled && (
+        <button
+          type="button"
+          onClick={escalar}
+          className="text-xs text-brand font-medium border-t border-slate-200 bg-white py-2 hover:bg-brand-mint transition"
+        >
+          🧑‍⚖️ Prefiero hablar directamente con mi abogado
+        </button>
+      )}
 
       <form onSubmit={enviar} className="flex gap-2 p-3 border-t border-slate-200 bg-white">
         <input

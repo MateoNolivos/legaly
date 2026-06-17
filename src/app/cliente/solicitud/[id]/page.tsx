@@ -79,13 +79,14 @@ export default async function SolicitudClientePage({
 
         <div>
           <h2 className="text-sm font-semibold text-slate-500 mb-2">
-            Conversación con tu abogado
+            {s.modo === "ia" ? "Chat — asistente y tu abogado" : "Conversación con tu abogado"}
           </h2>
           <Chat
             solicitudId={s.id}
             rol="CLIENTE"
             inicial={mensajes}
             disabled={s.estado === "Resuelta"}
+            puedeEscalar={s.modo === "ia"}
           />
         </div>
       </main>

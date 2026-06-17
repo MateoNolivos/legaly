@@ -1,0 +1,128 @@
+// Asistente del chat híbrido. Decide si responde la IA o deriva al abogado.
+// Orden de intento: 1) Mac Mini (Ollama, OpenAI-compatible) 2) Groq 3) reglas.
+
+export type Decision = { escalar: boolean; respuesta: string };
+type MensajeCtx = { rol: string; texto: string };
+
+const SYSTEM = `Eres el asistente virtual de LEGALY, una plataforma legal en Ecuador.
+Estás dentro de un chat entre un CLIENTE y su ABOGADO.
+Tu trabajo es responder SOLO consultas generales, administrativas o informativas:
+- cómo funciona el proceso o la plataforma
+- qué documentos se suelen necesitar (en general)
+- plazos o costos en términos generales
+- próximos pasos a alto nivel
+NO des asesoría legal específica del caso, NO interpretes documentos, NO des estrategia
+ni plazos exactos del caso particular. Si la consulta requiere el criterio del abogado o
+información específica del expediente, DERIVA al abogado.
+Responde en español, breve, claro y amable.
+Devuelve ÚNICAMENTE un JSON válido, sin texto adicional, con esta forma:
+{"escalar": false, "respuesta": "tu respuesta"}  o  {"escalar": true, "respuesta": "mensaje breve avisando que derivas al abogado"}.`;
+
+function construirContexto(o: { materia: string; descripcion: string; historial: MensajeCtx[] }): string {
+  const hist = o.historial
+    .map((m) => `${m.rol === "CLIENTE" ? "Cliente" : m.rol === "ABOGADO" ? "Abogado" : "Asistente"}: ${m.texto}`)
+    .join("\n");
+  return `Materia de la solicitud: ${o.materia}\nDescripción inicial: ${o.descripcion}\n\nConversación reciente:\n${hist}\n\nResponde la última consulta del cliente.`;
+}
+
+async function llamarOpenAICompat(
+  baseUrl: string,
+  apiKey: string,
+  model: string,
+  userContent: string
+): Promise<string | null> {
+  try {
+    const res = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.2,
+        max_tokens: 400,
+        messages: [
+          { role: "system", content: SYSTEM },
+          { role: "user", content: userContent },
+        ],
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.choices?.[0]?.message?.content ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function parseDecision(texto: string): Decision | null {
+  const m = texto.match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try {
+    const o = JSON.parse(m[0]);
+    if (typeof o.respuesta !== "string") return null;
+    return { escalar: !!o.escalar, respuesta: o.respuesta.trim() };
+  } catch {
+    return null;
+  }
+}
+
+// Respuesta por reglas (sin IA): responde lo muy general, deriva el resto.
+function responderReglas(o: { historial: MensajeCtx[] }): Decision {
+  const ultima = [...o.historial].reverse().find((m) => m.rol === "CLIENTE");
+  const q = (ultima?.texto || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+  const inc = (...p: string[]) => p.some((x) => q.includes(x));
+
+  if (inc("hola", "buenas", "buenos dias", "buenas tardes") && q.length < 25)
+    return { escalar: false, respuesta: "¡Hola! Soy el asistente de LEGALY. Puedo ayudarte con dudas generales sobre tu proceso, documentos o la plataforma. Si necesitas algo específico de tu caso, te conecto con tu abogado." };
+  if (inc("documento", "papeles", "requisito"))
+    return { escalar: false, respuesta: "En general se piden tu cédula y los documentos relacionados a tu caso. Tu abogado te indicará exactamente cuáles según tu situación." };
+  if (inc("cuanto cuesta", "precio", "plan", "pago", "costo"))
+    return { escalar: false, respuesta: "Los planes son Básico, Pro y Gold, con distintos beneficios y descuentos. Puedes verlos y cambiarlos desde tu panel." };
+  if (inc("cuanto tarda", "tiempo", "demora", "cuando"))
+    return { escalar: false, respuesta: "Los tiempos varían según el tipo de caso. Tu abogado te dará una estimación más precisa cuando revise tu solicitud." };
+  if (inc("como funciona", "como uso", "que hago", "ayuda"))
+    return { escalar: false, respuesta: "Creas tu solicitud, te asignamos un abogado y conversan por este chat. Yo respondo lo general; tu abogado, lo específico de tu caso." };
+
+  return { escalar: true, respuesta: "Esta consulta es mejor que la vea tu abogado. Ya lo notifiqué para que te responda por aquí." };
+}
+
+export async function responderAsistente(opts: {
+  materia: string;
+  descripcion: string;
+  historial: MensajeCtx[];
+}): Promise<Decision> {
+  const userContent = construirContexto(opts);
+
+  // 1) Mac Mini (Ollama u otro OpenAI-compatible).
+  if (process.env.LLM_PRINCIPAL_URL) {
+    const t = await llamarOpenAICompat(
+      process.env.LLM_PRINCIPAL_URL,
+      process.env.LLM_PRINCIPAL_KEY || "ollama",
+      process.env.LLM_PRINCIPAL_MODELO || "gemma2",
+      userContent
+    );
+    const d = t ? parseDecision(t) : null;
+    if (d) return d;
+  }
+
+  // 2) Groq (respaldo).
+  if (process.env.GROQ_API_KEY) {
+    const t = await llamarOpenAICompat(
+      "https://api.groq.com/openai/v1",
+      process.env.GROQ_API_KEY,
+      process.env.GROQ_MODELO || "llama-3.3-70b-versatile",
+      userContent
+    );
+    const d = t ? parseDecision(t) : null;
+    if (d) return d;
+  }
+
+  // 3) Reglas (siempre disponible).
+  return responderReglas(opts);
+}

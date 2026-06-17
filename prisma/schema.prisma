@@ -84,6 +84,8 @@ model Solicitud {
   telefono    String?
   // Estado: "Nueva" -> "Asignada" -> "En progreso" -> "Resuelta"
   estado      String  @default("Nueva")
+  // Modo del chat híbrido: "ia" (responde el asistente) o "abogado" (lo lleva el abogado)
+  modo        String  @default("ia")
 
   createdAt       DateTime  @default(now())
   assignedAt      DateTime? // cuando se asigno a un abogado
@@ -99,13 +101,13 @@ model Solicitud {
 model Mensaje {
   id          String   @id @default(cuid())
   solicitudId String
-  autorId     String
-  autorRol    String // "CLIENTE" o "ABOGADO"
+  autorId     String? // null cuando lo escribe el ASISTENTE (IA)
+  autorRol    String // "CLIENTE" | "ABOGADO" | "ASISTENTE"
   texto       String
   createdAt   DateTime @default(now())
 
   solicitud Solicitud @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
-  autor     User      @relation(fields: [autorId], references: [id])
+  autor     User?     @relation(fields: [autorId], references: [id])
 }
 
 // Un proceso o caso legal.
