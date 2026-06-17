@@ -1,9 +1,10 @@
 import Link from "next/link";
 
 // Pestañas del área del abogado.
-export default function AbogadoNav({ actual }: { actual: "solicitudes" | "perfil" }) {
+export default function AbogadoNav({ actual }: { actual: "solicitudes" | "ingresos" | "perfil" }) {
   const tabs = [
     { id: "solicitudes", label: "Mis solicitudes", href: "/abogado" },
+    { id: "ingresos", label: "Mis ingresos", href: "/abogado/ingresos" },
     { id: "perfil", label: "Mi perfil", href: "/abogado/perfil" },
   ] as const;
 
